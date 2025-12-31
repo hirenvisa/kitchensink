@@ -1,0 +1,148 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Compiled class files
+*.class
+
+# Log files
+*.log
+*.log.*
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Virtual machine crash logs
+hs_err_pid*
+replay_pid*
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+.metadata
+*.launch
+*.pydevproject
+.cproject
+.externalToolBuilders/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Spring Boot (if migrating)
+application-local.properties
+application-local.yml
+*.pid
+*.log.*
+
+# JBoss/WildFly specific
+*.war
+*.ear
+standalone/
+domain/
+servers/
+jboss-as/
+wildfly/
+
+# Checkstyle reports
+checkstyle-result.xml
+checkstyle-checker.xml
+checkstyle-cachefile
+site/checkstyle.html
+site/checkstyle.rss
+
+# Test reports
+surefire-reports/
+failsafe-reports/
+test-results/
+TEST-*.xml
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+*.bak
+*.backup
+*.orig
+
+# Application specific
+*.pid
+*.lock
+
+# Generated sources
+generated-sources/
+generated-test-sources/
+generated/
+
+# Archive files
+*.tar.gz
+*.zip
+*.rar
+
+# Maven wrapper (uncomment if not using)
+# .mvn/wrapper/maven-wrapper.jar
+
+# Local configuration files
+application-local.properties
+application-local.yml
+config/local/
+
+# Build artifacts
+*.war
+*.ear
+*.jar
+!pom.xml
+
+# IDE workspace files
+*.sublime-project
+*.sublime-workspace
+
+# Package manager files (if using npm/yarn for frontend)
+node_modules/
+package-lock.json
+yarn.lock
+
