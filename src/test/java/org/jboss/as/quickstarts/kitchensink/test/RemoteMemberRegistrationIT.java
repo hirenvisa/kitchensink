@@ -16,20 +16,19 @@
  */
 package org.jboss.as.quickstarts.kitchensink.test;
 
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-
-import java.util.logging.Logger;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.logging.Logger;
 
 import org.jboss.as.quickstarts.kitchensink.model.Member;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 
 public class RemoteMemberRegistrationIT {
 
@@ -71,8 +70,8 @@ public class RemoteMemberRegistrationIT {
                 .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
                 .build();
         HttpResponse response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-        Assert.assertEquals(200, response.statusCode());
-        Assert.assertEquals("", response.body().toString() );
+        assertEquals(200, response.statusCode());
+        assertEquals("", response.body().toString() );
     }
 
 }
