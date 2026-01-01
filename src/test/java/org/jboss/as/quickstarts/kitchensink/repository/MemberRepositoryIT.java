@@ -16,10 +16,11 @@
  */
 package org.jboss.as.quickstarts.kitchensink.repository;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 
@@ -90,10 +91,9 @@ public class MemberRepositoryIT {
         // Test findByEmail with non-existent email
         try {
             memberRepository.findByEmail("nonexistent@test.com");
-            assertTrue("Should have thrown NoResultException", false);
+            fail("Should have thrown NoResultException");
         } catch (NoResultException e) {
             // Expected exception
-            assertTrue("NoResultException should be thrown", true);
         }
     }
 

@@ -16,7 +16,7 @@
  */
 package org.jboss.as.quickstarts.kitchensink.service;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.jboss.as.quickstarts.kitchensink.model.Member;
 import org.junit.jupiter.api.Test;
