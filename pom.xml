@@ -43,6 +43,9 @@
     </licenses>
 
     <properties>
+        <java.version>17</java.version>
+        <jackson.version>2.15.2</jackson.version>
+        <spring-boot.version>3.1.4</spring-boot.version>
         <!-- The versions for BOMs, Dependencies and Plugins -->
         <version.server.bom>8.0.0.GA-redhat-00009</version.server.bom>
         <version.eap.maven.plugin>1.0.0.Final-redhat-00014</version.eap.maven.plugin>
@@ -112,6 +115,13 @@
                 <groupId>org.jboss.bom</groupId>
                 <artifactId>jboss-eap-ee-with-tools</artifactId>
                 <version>${version.server.bom}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -189,12 +199,6 @@
         <!-- Arquillian allows you to test enterprise code such as EJBs and Transactional(JTA)
         JPA from JUnit/TestNG -->
         <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-container</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.arquillian.protocol</groupId>
             <artifactId>arquillian-protocol-servlet-jakarta</artifactId>
             <scope>test</scope>
@@ -250,16 +254,31 @@
         </dependency>
 
         <dependency>
-   <groupId>jakarta.el</groupId>
-   <artifactId>jakarta.el-api</artifactId>
-   <version>4.0.0</version>
-</dependency>
-<dependency>
-   <groupId>org.glassfish</groupId>
-   <artifactId>jakarta.el</artifactId>
-   <version>4.0.1</version>
-</dependency>
-
+            <groupId>jakarta.el</groupId>
+            <artifactId>jakarta.el-api</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring-boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.0</version> <!-- Use the latest compatible version -->
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.el</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.15.2</version> <!-- Use the latest compatible version -->
+        </dependency>
     </dependencies>
 
     <profiles>

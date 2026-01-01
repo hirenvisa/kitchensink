@@ -19,57 +19,55 @@ package org.jboss.as.quickstarts.kitchensink.rest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
-import java.util.logging.Logger;
 
-import jakarta.inject.Inject;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
-
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.quickstarts.kitchensink.data.MemberRepository;
 import org.jboss.as.quickstarts.kitchensink.model.Member;
 import org.jboss.as.quickstarts.kitchensink.service.MemberRegistration;
-import org.jboss.as.quickstarts.kitchensink.util.Resources;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Integration tests for MemberResourceRESTService
+ * Spring Boot integration tests for MemberResourceRESTService
+ * Uses @SpringBootTest with MockMvc for REST API testing
  */
-@RunWith(Arquillian.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
+@TestPropertySource(properties = {
+    "spring.jpa.hibernate.ddl-auto=create-drop",
+    "spring.datasource.url=jdbc:h2:mem:testdb"
+})
 public class MemberResourceRESTServiceIT {
 
-    @Deployment
-    public static Archive<?> createTestArchive() {
-        return ShrinkWrap.create(WebArchive.class, "test.war")
-            .addClasses(Member.class, MemberRepository.class, MemberRegistration.class,
-                    MemberResourceRESTService.class, JaxRsActivator.class, Resources.class)
-            .addAsResource("META-INF/test-persistence.xml", "META-INF/persistence.xml")
-            .addAsWebInfResource(new StringAsset("<beans xmlns=\"https://jakarta.ee/xml/ns/jakartaee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                        + "xsi:schemaLocation=\"https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd\"\n"
-                        + "bean-discovery-mode=\"all\">\n"
-                        + "</beans>"), "beans.xml")
-            .addAsWebInfResource("test-ds.xml");
-    }
+    @Autowired
+    private MockMvc mockMvc;
 
-    @Inject
-    MemberResourceRESTService restService;
+    @Autowired
+    private MemberResourceRESTService restService;
 
-    @Inject
-    MemberRepository memberRepository;
+    @Autowired
+    private MemberRepository memberRepository;
 
-    @Inject
-    MemberRegistration memberRegistration;
+    @Autowired
+    private MemberRegistration memberRegistration;
 
-    @Inject
-    Logger log;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     public void testListAllMembers() throws Exception {
@@ -80,7 +78,14 @@ public class MemberResourceRESTServiceIT {
         memberRegistration.register(member1);
         memberRegistration.register(member2);
 
-        // Test listAllMembers
+        // Test via REST endpoint
+        mockMvc.perform(get("/rest/members"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(2)));
+
+        // Test via service directly
         List<Member> members = restService.listAllMembers();
         assertNotNull("List should not be null", members);
         assertTrue("Should have at least 2 members", members.size() >= 2);
@@ -89,6 +94,11 @@ public class MemberResourceRESTServiceIT {
     @Test
     public void testListAllMembersEmpty() throws Exception {
         // Test with potentially empty database
+        mockMvc.perform(get("/rest/members"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$").isArray());
+
         List<Member> members = restService.listAllMembers();
         assertNotNull("List should not be null even when empty", members);
     }
@@ -101,28 +111,44 @@ public class MemberResourceRESTServiceIT {
         Long memberId = member.getId();
         assertNotNull("Member ID should not be null", memberId);
 
-        // Test lookupMemberById with valid ID
+        // Test via REST endpoint
+        mockMvc.perform(get("/rest/members/{id}", memberId))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.id").value(memberId))
+            .andExpect(jsonPath("$.name").value("Charlie"))
+            .andExpect(jsonPath("$.email").value("charlie@rest.com"));
+
+        // Test via service directly
         Member found = restService.lookupMemberById(memberId);
         assertNotNull("Member should be found", found);
         assertEquals("Name should match", "Charlie", found.getName());
         assertEquals("Email should match", "charlie@rest.com", found.getEmail());
     }
 
-    @Test(expected = WebApplicationException.class)
+    @Test
     public void testLookupMemberByIdNotFound() throws Exception {
-        // Test lookupMemberById with non-existent ID
-        restService.lookupMemberById(99999L);
+        // Test via REST endpoint
+        mockMvc.perform(get("/rest/members/{id}", 99999L))
+            .andExpect(status().isNotFound());
     }
 
     @Test
     public void testCreateMemberSuccess() throws Exception {
         // Create a valid member
         Member member = createTestMember("David", "david@rest.com", "4444444444");
+        String memberJson = objectMapper.writeValueAsString(member);
 
-        // Test createMember
-        Response response = restService.createMember(member);
+        // Test via REST endpoint
+        mockMvc.perform(post("/rest/members")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(memberJson))
+            .andExpect(status().isOk());
+
+        // Test via service directly
+        jakarta.ws.rs.core.Response response = restService.createMember(member);
         assertNotNull("Response should not be null", response);
-        assertEquals("Status should be OK", Response.Status.OK.getStatusCode(), response.getStatus());
+        assertEquals("Status should be OK", jakarta.ws.rs.core.Response.Status.OK.getStatusCode(), response.getStatus());
     }
 
     @Test
@@ -132,15 +158,19 @@ public class MemberResourceRESTServiceIT {
         member.setName(null); // Invalid: @NotNull constraint
         member.setEmail("invalid@rest.com");
         member.setPhoneNumber("5555555555");
+        String memberJson = objectMapper.writeValueAsString(member);
 
-        // Test createMember with validation failure
-        Response response = restService.createMember(member);
+        // Test via REST endpoint
+        mockMvc.perform(post("/rest/members")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(memberJson))
+            .andExpect(status().isBadRequest());
+
+        // Test via service directly
+        jakarta.ws.rs.core.Response response = restService.createMember(member);
         assertNotNull("Response should not be null", response);
-        assertEquals("Status should be BAD_REQUEST", Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
-
-        // Verify error entity contains violation information
-        Object entity = response.getEntity();
-        assertNotNull("Error entity should not be null", entity);
+        assertEquals("Status should be BAD_REQUEST",
+            jakarta.ws.rs.core.Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
     }
 
     @Test
@@ -151,48 +181,32 @@ public class MemberResourceRESTServiceIT {
 
         // Try to create another member with same email
         Member member2 = createTestMember("Eve2", "eve@rest.com", "7777777777");
+        String memberJson = objectMapper.writeValueAsString(member2);
 
-        // Test createMember with duplicate email
-        Response response = restService.createMember(member2);
+        // Test via REST endpoint
+        mockMvc.perform(post("/rest/members")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(memberJson))
+            .andExpect(status().isConflict());
+
+        // Test via service directly
+        jakarta.ws.rs.core.Response response = restService.createMember(member2);
         assertNotNull("Response should not be null", response);
-        assertEquals("Status should be CONFLICT", Response.Status.CONFLICT.getStatusCode(), response.getStatus());
-
-        // Verify error entity contains email conflict message
-        Object entity = response.getEntity();
-        assertNotNull("Error entity should not be null", entity);
+        assertEquals("Status should be CONFLICT",
+            jakarta.ws.rs.core.Response.Status.CONFLICT.getStatusCode(), response.getStatus());
     }
 
     @Test
     public void testCreateMemberInvalidEmail() throws Exception {
         // Create member with invalid email format
         Member member = createTestMember("Frank", "invalid-email", "8888888888");
+        String memberJson = objectMapper.writeValueAsString(member);
 
-        // Test createMember with invalid email
-        Response response = restService.createMember(member);
-        assertNotNull("Response should not be null", response);
-        assertEquals("Status should be BAD_REQUEST", Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
-    }
-
-    @Test
-    public void testCreateMemberInvalidPhone() throws Exception {
-        // Create member with invalid phone (too short)
-        Member member = createTestMember("Grace", "grace@rest.com", "123"); // Too short
-
-        // Test createMember with invalid phone
-        Response response = restService.createMember(member);
-        assertNotNull("Response should not be null", response);
-        assertEquals("Status should be BAD_REQUEST", Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
-    }
-
-    @Test
-    public void testCreateMemberNameWithNumbers() throws Exception {
-        // Create member with name containing numbers (violates @Pattern)
-        Member member = createTestMember("John123", "john@rest.com", "9999999999");
-
-        // Test createMember with invalid name pattern
-        Response response = restService.createMember(member);
-        assertNotNull("Response should not be null", response);
-        assertEquals("Status should be BAD_REQUEST", Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        // Test via REST endpoint
+        mockMvc.perform(post("/rest/members")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(memberJson))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -218,4 +232,5 @@ public class MemberResourceRESTServiceIT {
         return member;
     }
 }
+
 

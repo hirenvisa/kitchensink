@@ -22,56 +22,45 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-import java.util.logging.Logger;
 
-import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.quickstarts.kitchensink.data.MemberRepository;
 import org.jboss.as.quickstarts.kitchensink.model.Member;
 import org.jboss.as.quickstarts.kitchensink.service.MemberRegistration;
-import org.jboss.as.quickstarts.kitchensink.util.Resources;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
 
 /**
- * Integration tests for MemberRepository
+ * Spring Boot integration tests for MemberRepository
+ * Uses @DataJpaTest for repository layer testing with in-memory database
  */
-@RunWith(Arquillian.class)
+@DataJpaTest
+@TestPropertySource(properties = {
+    "spring.jpa.hibernate.ddl-auto=create-drop",
+    "spring.datasource.url=jdbc:h2:mem:testdb"
+})
+@Import({MemberRegistration.class})
 public class MemberRepositoryIT {
 
-    @Deployment
-    public static Archive<?> createTestArchive() {
-        return ShrinkWrap.create(WebArchive.class, "test.war")
-            .addClasses(Member.class, MemberRepository.class, MemberRegistration.class, Resources.class)
-            .addAsResource("META-INF/test-persistence.xml", "META-INF/persistence.xml")
-            .addAsWebInfResource(new StringAsset("<beans xmlns=\"https://jakarta.ee/xml/ns/jakartaee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                        + "xsi:schemaLocation=\"https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd\"\n"
-                        + "bean-discovery-mode=\"all\">\n"
-                        + "</beans>"), "beans.xml")
-            .addAsWebInfResource("test-ds.xml");
-    }
+    @Autowired
+    private TestEntityManager entityManager;
 
-    @Inject
-    MemberRepository memberRepository;
+    @Autowired
+    private MemberRepository memberRepository;
 
-    @Inject
-    MemberRegistration memberRegistration;
-
-    @Inject
-    Logger log;
+    @Autowired
+    private MemberRegistration memberRegistration;
 
     @Test
     public void testFindById() throws Exception {
         // Create and persist a member
         Member member = createTestMember("Alice", "alice@test.com", "1234567890");
-        memberRegistration.register(member);
+        member = entityManager.persistAndFlush(member);
         Long memberId = member.getId();
         assertNotNull("Member ID should not be null", memberId);
 
@@ -90,7 +79,7 @@ public class MemberRepositoryIT {
     public void testFindByEmail() throws Exception {
         // Create and persist a member
         Member member = createTestMember("Bob", "bob@test.com", "9876543210");
-        memberRegistration.register(member);
+        member = entityManager.persistAndFlush(member);
 
         // Test findByEmail with valid email
         Member found = memberRepository.findByEmail("bob@test.com");
@@ -115,9 +104,9 @@ public class MemberRepositoryIT {
         Member member2 = createTestMember("Alice", "alice2@test.com", "2222222222");
         Member member3 = createTestMember("Bob", "bob2@test.com", "3333333333");
 
-        memberRegistration.register(member1);
-        memberRegistration.register(member2);
-        memberRegistration.register(member3);
+        entityManager.persistAndFlush(member1);
+        entityManager.persistAndFlush(member2);
+        entityManager.persistAndFlush(member3);
 
         // Test findAllOrderedByName
         List<Member> members = memberRepository.findAllOrderedByName();
@@ -157,10 +146,9 @@ public class MemberRepositoryIT {
 
     @Test
     public void testFindAllOrderedByNameEmpty() throws Exception {
-        // Test with empty database (assuming clean state)
+        // Test with empty database
         List<Member> members = memberRepository.findAllOrderedByName();
         assertNotNull("List should not be null even when empty", members);
-        // Note: May not be empty if other tests have run, but should not be null
     }
 
     @Test
@@ -170,9 +158,9 @@ public class MemberRepositoryIT {
         Member member2 = createTestMember("Álice", "alice3@test.com", "2222222222");
         Member member3 = createTestMember("Bob", "bob3@test.com", "3333333333");
 
-        memberRegistration.register(member1);
-        memberRegistration.register(member2);
-        memberRegistration.register(member3);
+        entityManager.persistAndFlush(member1);
+        entityManager.persistAndFlush(member2);
+        entityManager.persistAndFlush(member3);
 
         List<Member> members = memberRepository.findAllOrderedByName();
         assertNotNull("List should not be null", members);
@@ -187,4 +175,5 @@ public class MemberRepositoryIT {
         return member;
     }
 }
+
 
