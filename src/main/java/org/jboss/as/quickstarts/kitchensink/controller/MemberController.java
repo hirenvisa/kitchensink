@@ -48,7 +48,8 @@ public class MemberController {
      */
     @GetMapping("/")
     public String index(Model model) {
-        // Add a new empty member for the form
+        // Add a new empty member for the form if not present from redirect
+        // This ensures we always have a newMember object for the form binding
         if (!model.containsAttribute("newMember")) {
             model.addAttribute("newMember", new Member());
         }
@@ -57,6 +58,15 @@ public class MemberController {
         model.addAttribute("members", memberRepository.findAllOrderedByName());
         
         return "index";
+    }
+
+    /**
+     * Provides a default newMember object for all controller methods
+     * This ensures the form always has an object to bind to
+     */
+    @ModelAttribute("newMember")
+    public Member getNewMember() {
+        return new Member();
     }
 
     /**

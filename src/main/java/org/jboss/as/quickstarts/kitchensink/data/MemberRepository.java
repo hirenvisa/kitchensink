@@ -45,7 +45,11 @@ public class MemberRepository {
         // feature in JPA 2.0
         // criteria.select(member).where(cb.equal(member.get(Member_.email), email));
         criteria.select(member).where(cb.equal(member.get("email"), email));
-        return em.createQuery(criteria).getSingleResult();
+        try {
+            return em.createQuery(criteria).getSingleResult();
+        } catch (jakarta.persistence.NoResultException e) {
+            return null;
+        }
     }
 
     public List<Member> findAllOrderedByName() {

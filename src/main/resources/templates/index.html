@@ -224,7 +224,6 @@
                         <input type="text" 
                                id="name" 
                                th:field="*{name}"
-                               th:classappend="${#fields.hasErrors('name')} ? 'error' : ''"
                                placeholder="Enter full name" 
                                required>
                         <span th:if="${#fields.hasErrors('name')}" 
@@ -237,7 +236,6 @@
                         <input type="email" 
                                id="email" 
                                th:field="*{email}"
-                               th:classappend="${#fields.hasErrors('email')} ? 'error' : ''"
                                placeholder="email@example.com" 
                                required>
                         <span th:if="${#fields.hasErrors('email')}" 
@@ -250,7 +248,6 @@
                         <input type="tel" 
                                id="phoneNumber" 
                                th:field="*{phoneNumber}"
-                               th:classappend="${#fields.hasErrors('phoneNumber')} ? 'error' : ''"
                                placeholder="10-12 digits" 
                                required>
                         <span th:if="${#fields.hasErrors('phoneNumber')}" 
