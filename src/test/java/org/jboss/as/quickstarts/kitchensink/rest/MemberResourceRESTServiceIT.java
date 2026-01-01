@@ -150,9 +150,9 @@ public class MemberResourceRESTServiceIT {
             .andExpect(status().isOk());
 
         // Test via service directly
-        jakarta.ws.rs.core.Response response = restService.createMember(member, true);
+        ResponseEntity<?> response = restService.createMember(member);
         assertNotNull(response, "Response should not be null");
-        assertEquals(jakarta.ws.rs.core.Response.Status.OK.getStatusCode(), response.getStatus(), "Status should be OK");
+        assertEquals(HttpStatus.OK, response.getStatusCode(), "Status should be OK");
     }
 
     @Test
@@ -171,10 +171,9 @@ public class MemberResourceRESTServiceIT {
             .andExpect(status().isBadRequest());
 
         // Test via service directly
-        jakarta.ws.rs.core.Response response = restService.createMember(member, true);
+        ResponseEntity<?> response = restService.createMember(member);
         assertNotNull(response, "Response should not be null");
-        assertEquals(
-            jakarta.ws.rs.core.Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus(), "Status should be BAD_REQUEST");
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(), "Status should be BAD_REQUEST");
     }
 
     @Test
@@ -194,10 +193,9 @@ public class MemberResourceRESTServiceIT {
             .andExpect(status().isConflict());
 
         // Test via service directly
-        jakarta.ws.rs.core.Response response = restService.createMember(member2, true);
+        ResponseEntity<?> response = restService.createMember(member2);
         assertNotNull(response, "Response should not be null");
-        assertEquals(
-            jakarta.ws.rs.core.Response.Status.CONFLICT.getStatusCode(), response.getStatus(), "Status should be CONFLICT");
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode(), "Status should be CONFLICT");
     }
 
     @Test

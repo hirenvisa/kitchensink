@@ -16,14 +16,14 @@
  */
 package org.jboss.as.quickstarts.kitchensink.service;
 
+import java.util.logging.Logger;
+
 import org.jboss.as.quickstarts.kitchensink.model.Member;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import java.util.logging.Logger;
 
 // Spring Service with transactional support
 @Service
@@ -32,12 +32,11 @@ public class MemberRegistration {
 
     private static final Logger log = Logger.getLogger(MemberRegistration.class.getName());
 
-    @PersistenceContext
-    private EntityManager em;
-
+    private final EntityManager em;
     private final ApplicationEventPublisher eventPublisher;
 
-    public MemberRegistration(ApplicationEventPublisher eventPublisher) {
+    public MemberRegistration(EntityManager em, ApplicationEventPublisher eventPublisher) {
+        this.em = em;
         this.eventPublisher = eventPublisher;
     }
 

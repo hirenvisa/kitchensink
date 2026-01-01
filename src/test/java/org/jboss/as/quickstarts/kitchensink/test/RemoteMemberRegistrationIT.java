@@ -21,18 +21,12 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.logging.Logger;
 
 import org.jboss.as.quickstarts.kitchensink.model.Member;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-
 public class RemoteMemberRegistrationIT {
-
-    private static final Logger log = Logger.getLogger(RemoteMemberRegistrationIT.class.getName());
 
     protected URI getHTTPEndpoint() {
         String host = getServerHost();
@@ -61,17 +55,19 @@ public class RemoteMemberRegistrationIT {
         newMember.setName("Jane Doe");
         newMember.setEmail("jane@mailinator.com");
         newMember.setPhoneNumber("2125551234");
-        JsonObject json = Json.createObjectBuilder()
-                .add("name", "Jane Doe")
-                .add("email", "jane@mailinator.com")
-                .add("phoneNumber", "2125551234").build();
+        
+        String json = String.format(
+            "{\"name\":\"%s\",\"email\":\"%s\",\"phoneNumber\":\"%s\"}",
+            newMember.getName(), newMember.getEmail(), newMember.getPhoneNumber()
+        );
+        
         HttpRequest request = HttpRequest.newBuilder(getHTTPEndpoint())
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
+                .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
-        HttpResponse response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, response.statusCode());
-        assertEquals("", response.body().toString() );
+        assertEquals("", response.body());
     }
 
 }
