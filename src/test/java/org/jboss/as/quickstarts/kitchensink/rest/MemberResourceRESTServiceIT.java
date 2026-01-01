@@ -16,27 +16,28 @@
  */
 package org.jboss.as.quickstarts.kitchensink.rest;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.List;
 
 import org.jboss.as.quickstarts.kitchensink.data.MemberRepository;
 import org.jboss.as.quickstarts.kitchensink.model.Member;
 import org.jboss.as.quickstarts.kitchensink.service.MemberRegistration;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -87,8 +88,8 @@ public class MemberResourceRESTServiceIT {
 
         // Test via service directly
         List<Member> members = restService.listAllMembers();
-        assertNotNull("List should not be null", members);
-        assertTrue("Should have at least 2 members", members.size() >= 2);
+        assertNotNull(members, "List should not be null");
+        assertTrue(members.size() >= 2, "Should have at least 2 members");
     }
 
     @Test
@@ -100,7 +101,7 @@ public class MemberResourceRESTServiceIT {
             .andExpect(jsonPath("$").isArray());
 
         List<Member> members = restService.listAllMembers();
-        assertNotNull("List should not be null even when empty", members);
+        assertNotNull(members, "List should not be null even when empty");
     }
 
     @Test
@@ -109,7 +110,7 @@ public class MemberResourceRESTServiceIT {
         Member member = createTestMember("Charlie", "charlie@rest.com", "3333333333");
         memberRegistration.register(member);
         Long memberId = member.getId();
-        assertNotNull("Member ID should not be null", memberId);
+        assertNotNull(memberId, "Member ID should not be null");
 
         // Test via REST endpoint
         mockMvc.perform(get("/rest/members/{id}", memberId))
@@ -120,10 +121,13 @@ public class MemberResourceRESTServiceIT {
             .andExpect(jsonPath("$.email").value("charlie@rest.com"));
 
         // Test via service directly
-        Member found = restService.lookupMemberById(memberId);
-        assertNotNull("Member should be found", found);
-        assertEquals("Name should match", "Charlie", found.getName());
-        assertEquals("Email should match", "charlie@rest.com", found.getEmail());
+        ResponseEntity<Member> response = restService.lookupMemberById(memberId);
+        assertNotNull(response, "Response should not be null");
+        assertEquals(HttpStatus.OK, response.getStatusCode(), "Status should be OK");
+        Member found = response.getBody();
+        assertNotNull(found, "Member should be found");
+        assertEquals("Charlie", found.getName(), "Name should match");
+        assertEquals("charlie@rest.com", found.getEmail(), "Email should match");
     }
 
     @Test
@@ -146,9 +150,9 @@ public class MemberResourceRESTServiceIT {
             .andExpect(status().isOk());
 
         // Test via service directly
-        jakarta.ws.rs.core.Response response = restService.createMember(member);
-        assertNotNull("Response should not be null", response);
-        assertEquals("Status should be OK", jakarta.ws.rs.core.Response.Status.OK.getStatusCode(), response.getStatus());
+        jakarta.ws.rs.core.Response response = restService.createMember(member, true);
+        assertNotNull(response, "Response should not be null");
+        assertEquals(jakarta.ws.rs.core.Response.Status.OK.getStatusCode(), response.getStatus(), "Status should be OK");
     }
 
     @Test
@@ -167,10 +171,10 @@ public class MemberResourceRESTServiceIT {
             .andExpect(status().isBadRequest());
 
         // Test via service directly
-        jakarta.ws.rs.core.Response response = restService.createMember(member);
-        assertNotNull("Response should not be null", response);
-        assertEquals("Status should be BAD_REQUEST",
-            jakarta.ws.rs.core.Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        jakarta.ws.rs.core.Response response = restService.createMember(member, true);
+        assertNotNull(response, "Response should not be null");
+        assertEquals(
+            jakarta.ws.rs.core.Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus(), "Status should be BAD_REQUEST");
     }
 
     @Test
@@ -190,10 +194,10 @@ public class MemberResourceRESTServiceIT {
             .andExpect(status().isConflict());
 
         // Test via service directly
-        jakarta.ws.rs.core.Response response = restService.createMember(member2);
-        assertNotNull("Response should not be null", response);
-        assertEquals("Status should be CONFLICT",
-            jakarta.ws.rs.core.Response.Status.CONFLICT.getStatusCode(), response.getStatus());
+        jakarta.ws.rs.core.Response response = restService.createMember(member2, true);
+        assertNotNull(response, "Response should not be null");
+        assertEquals(
+            jakarta.ws.rs.core.Response.Status.CONFLICT.getStatusCode(), response.getStatus(), "Status should be CONFLICT");
     }
 
     @Test
@@ -217,11 +221,11 @@ public class MemberResourceRESTServiceIT {
 
         // Test emailAlreadyExists with existing email
         boolean exists = restService.emailAlreadyExists("henry@rest.com");
-        assertTrue("Email should exist", exists);
+        assertTrue(exists, "Email should exist");
 
         // Test emailAlreadyExists with non-existent email
         boolean notExists = restService.emailAlreadyExists("nonexistent@rest.com");
-        assertTrue("Email should not exist", !notExists);
+        assertTrue(!notExists, "Email should not exist");
     }
 
     private Member createTestMember(String name, String email, String phoneNumber) {

@@ -16,9 +16,8 @@
  */
 package org.jboss.as.quickstarts.kitchensink.service;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import org.jboss.as.quickstarts.kitchensink.model.Member;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,7 +48,7 @@ public class MemberRegistrationServiceIT {
 
         memberRegistration.register(newMember);
 
-        assertNotNull("Member ID should be set after registration", newMember.getId());
+        assertNotNull(newMember.getId(), "Member ID should be set after registration");
     }
 
     @Test
@@ -60,8 +59,8 @@ public class MemberRegistrationServiceIT {
         memberRegistration.register(member1);
         memberRegistration.register(member2);
 
-        assertNotNull("Member 1 ID should be set", member1.getId());
-        assertNotNull("Member 2 ID should be set", member2.getId());
+        assertNotNull(member1.getId(), "Member 1 ID should be set");
+        assertNotNull(member2.getId(), "Member 2 ID should be set");
     }
 
     @Test
@@ -70,7 +69,7 @@ public class MemberRegistrationServiceIT {
         Member member = createTestMember("Charlie", "charlie@service.com", "3333333333");
         memberRegistration.register(member);
 
-        assertNotNull("Member should be persisted", member.getId());
+        assertNotNull(member.getId(), "Member should be persisted");
     }
 
     private Member createTestMember(String name, String email, String phoneNumber) {

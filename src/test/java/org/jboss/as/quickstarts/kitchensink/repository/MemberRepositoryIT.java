@@ -16,25 +16,24 @@
  */
 package org.jboss.as.quickstarts.kitchensink.repository;
 
+import java.util.List;
+
+import org.jboss.as.quickstarts.kitchensink.data.MemberRepository;
+import org.jboss.as.quickstarts.kitchensink.model.Member;
+import org.jboss.as.quickstarts.kitchensink.service.MemberRegistration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-
-import java.util.List;
-
-import jakarta.persistence.NoResultException;
-
-import org.jboss.as.quickstarts.kitchensink.data.MemberRepository;
-import org.jboss.as.quickstarts.kitchensink.model.Member;
-import org.jboss.as.quickstarts.kitchensink.service.MemberRegistration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
+
+import jakarta.persistence.NoResultException;
 
 /**
  * Spring Boot integration tests for MemberRepository
@@ -63,17 +62,17 @@ public class MemberRepositoryIT {
         Member member = createTestMember("Alice", "alice@test.com", "1234567890");
         member = entityManager.persistAndFlush(member);
         Long memberId = member.getId();
-        assertNotNull("Member ID should not be null", memberId);
+        assertNotNull(memberId, "Member ID should not be null");
 
         // Test findById with valid ID
         Member found = memberRepository.findById(memberId);
-        assertNotNull("Member should be found", found);
-        assertEquals("Name should match", "Alice", found.getName());
-        assertEquals("Email should match", "alice@test.com", found.getEmail());
+        assertNotNull(found, "Member should be found");
+        assertEquals("Alice", found.getName(), "Name should match");
+        assertEquals("alice@test.com", found.getEmail(), "Email should match");
 
         // Test findById with non-existent ID
         Member notFound = memberRepository.findById(99999L);
-        assertNull("Member should not be found", notFound);
+        assertNull(notFound, "Member should not be found");
     }
 
     @Test
@@ -84,9 +83,9 @@ public class MemberRepositoryIT {
 
         // Test findByEmail with valid email
         Member found = memberRepository.findByEmail("bob@test.com");
-        assertNotNull("Member should be found", found);
-        assertEquals("Name should match", "Bob", found.getName());
-        assertEquals("Email should match", "bob@test.com", found.getEmail());
+        assertNotNull(found, "Member should be found");
+        assertEquals("Bob", found.getName(), "Name should match");
+        assertEquals("bob@test.com", found.getEmail(), "Email should match");
 
         // Test findByEmail with non-existent email
         try {
@@ -110,8 +109,8 @@ public class MemberRepositoryIT {
 
         // Test findAllOrderedByName
         List<Member> members = memberRepository.findAllOrderedByName();
-        assertNotNull("List should not be null", members);
-        assertTrue("Should have at least 3 members", members.size() >= 3);
+        assertNotNull(members, "List should not be null");
+        assertTrue(members.size() >= 3, "Should have at least 3 members");
 
         // Verify ordering (Alice, Bob, Charlie)
         boolean foundAlice = false;
@@ -135,20 +134,20 @@ public class MemberRepositoryIT {
             }
         }
 
-        assertTrue("Alice should be found", foundAlice);
-        assertTrue("Bob should be found", foundBob);
-        assertTrue("Charlie should be found", foundCharlie);
+        assertTrue(foundAlice, "Alice should be found");
+        assertTrue(foundBob, "Bob should be found");
+        assertTrue(foundCharlie, "Charlie should be found");
 
         // Verify alphabetical order
-        assertTrue("Alice should come before Bob", aliceIndex < bobIndex);
-        assertTrue("Bob should come before Charlie", bobIndex < charlieIndex);
+        assertTrue(aliceIndex < bobIndex, "Alice should come before Bob");
+        assertTrue(bobIndex < charlieIndex, "Bob should come before Charlie");
     }
 
     @Test
     public void testFindAllOrderedByNameEmpty() throws Exception {
         // Test with empty database
         List<Member> members = memberRepository.findAllOrderedByName();
-        assertNotNull("List should not be null even when empty", members);
+        assertNotNull(members, "List should not be null even when empty");
     }
 
     @Test
@@ -163,8 +162,8 @@ public class MemberRepositoryIT {
         entityManager.persistAndFlush(member3);
 
         List<Member> members = memberRepository.findAllOrderedByName();
-        assertNotNull("List should not be null", members);
-        assertTrue("Should have at least 3 members", members.size() >= 3);
+        assertNotNull(members, "List should not be null");
+        assertTrue(members.size() >= 3, "Should have at least 3 members");
     }
 
     private Member createTestMember(String name, String email, String phoneNumber) {
